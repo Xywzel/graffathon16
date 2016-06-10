@@ -14,7 +14,7 @@ SOURCES = main.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 
 # Name of the executable
-TARGET = demo
+TARGET = demo.out
 
 all: $(TARGET)
 	@echo Compiled to $(TARGET)
