@@ -66,7 +66,7 @@ void Shader::checkErrors(GLuint shader, std::string type) {
 	if (type != "program") {
 		if (!success) {
 			glGetShaderInfoLog(shader, 1024, NULL, info);
-			std::cout << "ERROR SHADER filed to compile shadder of type " << type << "\n" << info << "\n" << std::endl;
+			std::cout << "ERROR SHADER filed to compile shader of type " << type << "\n" << info << "\n" << std::endl;
 		}
 	} else {
 		glGetProgramiv(shader, GL_LINK_STATUS, &success);
