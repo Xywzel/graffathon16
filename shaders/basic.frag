@@ -82,8 +82,8 @@ vec4 secondEffect(){
 vec4 thirdEffect(){
   vec4 color = vec4(0.0f, 0.0f, 0.0f, 0.0f);
   float effectTime = time - first;
-  float cameraX = sin(effectTime) * clamp(effectTime, 1.0f, 4.0f);
-  float cameraZ = cos(effectTime) * clamp(effectTime, 1.0f, 4.0f);
+  float cameraX = sin(effectTime) * 4.0f;
+  float cameraZ = cos(effectTime) * 4.0f;
   vec3 camera = vec3(cameraX , 0.0f, cameraZ);
   vec3 sphere = vec3(0.0f, 0.0f, 1.0f);
   vec3 rayDir = rayDirection(normalize(sphere - camera), vec3(0.0f, 1.0f, 0.0f));
@@ -97,10 +97,11 @@ vec4 thirdEffect(){
   else {
     vec3 collision = camera + d * rayDir;
     vec3 normal = normalize(collision - sphere);
-    vec3 refraction = refract(rayDir, normal, 1.0f + sin(time * 3.0) * 0.3);
+    vec3 refraction = refract(rayDir, normal, 1.0f + sin(effectTime * 3.0) * 0.3);
     vec3 reflection = reflect(rayDir, normal);
-    float portion = dot(reflection, normal);
-    color += sampleBackground(refraction) * portion * portion + sampleBackground(reflection) * (1.0f - portion * portion);
+    float portion = dot(refraction, -normal);
+    if (portion > 0) color += sampleBackground(refraction);
+    else sampleBackground(reflection);
   }
   return color;
 }
@@ -108,31 +109,41 @@ vec4 thirdEffect(){
 vec4 fourthEffect(){
   vec4 color = vec4(0.0f, 0.0f, 0.0f, 0.0f);
   float effectTime = time - first;
-  float cameraX = sin(effectTime) * clamp(effectTime, 1.0f, 4.0f);
-  float cameraZ = cos(effectTime) * clamp(effectTime, 1.0f, 4.0f);
+  float cameraX = sin(effectTime) * 4.0f;
+  float cameraZ = cos(effectTime) * 4.0f;
   vec3 camera = vec3(cameraX , 0.0f, cameraZ);
   vec3 sphere = vec3(0.0f, 0.0f, 1.0f);
   vec3 rayDir = rayDirection(normalize(sphere - camera), vec3(0.0f, 1.0f, 0.0f));
   float radius = 0.5f;
 
-  float d1 = sphereCollisionDistance(camera, rayDir, sphere, radius);
-  if (d1 > 0) {
-    vec3 collision = camera + d1 * rayDir;
-    vec3 normal = normalize(collision - sphere);
-    vec3 newRay = refract(rayDir, normal, 1.25f);
-/*
-    float d2 = sphereCollisionDistance(collision, newRay, sphere, radius);
-    if (d2 > 0) {
-      collision = collision + d2 * newRay;
-      normal = normalize(collision -sphere);
-      newRay = refract(newRay, normal, 1.0f/1.25f);
-      color += sampleBackground(newRay);
-    }
-    color += sampleBackground(newRay);
-*/
-    color += sampleBackground(newRay);
+  float d = sphereCollisionDistance(camera, rayDir, sphere, radius);
+
+  if(d < 0) {
+    color += sampleBackground(rayDir);
   }
-  else color += sampleBackground(rayDir);
+  else {
+    vec3 collision = camera + d * rayDir;
+    vec3 normal = normalize(collision - sphere);
+    vec3 refraction = refract(rayDir, normal, 1.0f + sin(effectTime * 3.0) * 0.3);
+    vec3 reflection = reflect(rayDir, normal);
+    float portion = dot(reflection, normal);
+    if (portion < 0) {
+      color += sampleBackground(reflection);
+    }
+    else {
+      float d2 = sphereCollisionDistance(collision + 0.01f * refraction, refraction, sphere, radius);
+      if (d2 > 0) {
+        collision = collision + d2 * refraction;
+        normal = normalize(collision -sphere);
+        vec3 newRefraction = refract(rayDir, normal, 1.0f + sin(effectTime * 3.0) * 0.3);
+        float portion = dot(reflection, normal);
+        if(portion < 0) color += sampleBackground(refraction);
+        else color += sampleBackground(newRefraction);
+      }
+      else color += sampleBackground(refraction);
+    }
+    color += sampleBackground(rayDir);
+  }
   return color;
 }
 

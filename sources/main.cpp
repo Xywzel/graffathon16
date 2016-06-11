@@ -28,10 +28,10 @@ const GLuint WIDTH = 1920;
 const GLuint HEIGHT = 1080;
 const GLfloat FPS = 60.0f;
 
-const GLuint START = 0.0f;
-const GLuint FIRST = 6.0f;
-const GLuint SECOND = 9.0f;
-const GLuint THIRD = 12.0f;
+const GLuint START = 30.0f;
+const GLuint FIRST = 10.0f;
+const GLuint SECOND = 20.0f;
+const GLuint THIRD = 30.0f;
 
 bool keys[1024];
 
@@ -63,7 +63,7 @@ void handleKeys(GLFWwindow* window, GLfloat& timeFromStart, bool& ticking, Shade
   if (keys[GLFW_KEY_ENTER]) {
     timeFromStart = 0.0f;
     keys[GLFW_KEY_ENTER] = false;
-    shader = Shader("shaders/basic.vertex", "shaders/basic.frag");
+    shader = Shader("shaders/basic.vertex", "shaders/advanced.frag");
   }
 }
 
@@ -94,11 +94,13 @@ int main(int argc, char** argv){
   glViewport(0, 0, WIDTH, HEIGHT);
 
   // Load shaders
-  Shader shader("shaders/basic.vertex", "shaders/basic.frag");
-  glUseProgram(shader.program);
-  glUniform1f(glGetUniformLocation(shader.program, "first"), FIRST);
-  glUniform1f(glGetUniformLocation(shader.program, "second"), SECOND);
-  glUniform1f(glGetUniformLocation(shader.program, "third"), THIRD);
+  Shader shader1("shaders/basic.vertex", "shaders/basic.frag");
+  shader1.use();
+  glUniform1f(glGetUniformLocation(shader1.program, "first"), FIRST);
+  glUniform1f(glGetUniformLocation(shader1.program, "second"), SECOND);
+  glUniform1f(glGetUniformLocation(shader1.program, "third"), THIRD);
+
+  Shader shader2("shaders/basic.vertex", "shaders/advanced.frag");
 
   // Raster scene settings
   Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), -90.0f, 0.0f);
@@ -142,6 +144,9 @@ int main(int argc, char** argv){
   GLfloat thisFrame = (GLfloat) glfwGetTime();
   GLfloat deltaTime = thisFrame - lastFrame;
 
+  Shader shader = shader1;
+  int shaderNum = 1;
+
   while(!glfwWindowShouldClose(window)){
     thisFrame = (GLfloat) glfwGetTime();
     deltaTime = thisFrame - lastFrame;
@@ -175,7 +180,13 @@ int main(int argc, char** argv){
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), (GLfloat) WIDTH / (GLfloat) HEIGHT, 0.1f, 100.0f);
     glm::mat4 trans = proj * view * model;
 
-    glUseProgram(shader.program);
+    if(timeFromStart > 40.0f && shaderNum == 1) {
+      shader = shader2;
+      shaderNum++;
+    }
+
+    shader.use();
+
     glUniform1f(glGetUniformLocation(shader.program, "time"), timeFromStart);
     glUniformMatrix4fv(glGetUniformLocation(shader.program, "transform"), 1, GL_FALSE, glm::value_ptr(trans));
     glBindVertexArray(VAO);
