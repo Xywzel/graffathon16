@@ -28,6 +28,11 @@ const GLuint WIDTH = 1920;
 const GLuint HEIGHT = 1080;
 const GLfloat FPS = 60.0f;
 
+const GLuint START = 0.0f;
+const GLuint FIRST = 6.0f;
+const GLuint SECOND = 9.0f;
+const GLuint THIRD = 12.0f;
+
 bool keys[1024];
 
 void fatalError(std::string error){
@@ -90,6 +95,10 @@ int main(int argc, char** argv){
 
   // Load shaders
   Shader shader("shaders/basic.vertex", "shaders/basic.frag");
+  glUseProgram(shader.program);
+  glUniform1f(glGetUniformLocation(shader.program, "first"), FIRST);
+  glUniform1f(glGetUniformLocation(shader.program, "second"), SECOND);
+  glUniform1f(glGetUniformLocation(shader.program, "third"), THIRD);
 
   // Raster scene settings
   Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), -90.0f, 0.0f);
@@ -128,7 +137,7 @@ int main(int argc, char** argv){
   GLfloat fpstime = 0.0f;
 
   // Frame timings
-  GLfloat timeFromStart = 0.0f;
+  GLfloat timeFromStart = START;
   GLfloat lastFrame = (GLfloat) glfwGetTime();
   GLfloat thisFrame = (GLfloat) glfwGetTime();
   GLfloat deltaTime = thisFrame - lastFrame;
