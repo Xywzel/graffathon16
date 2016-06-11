@@ -20,6 +20,9 @@
 #include "Camera.h"
 #include "Shader.h"
 
+#define FPSlog false
+#define SCALE 1.5f
+
 #define NAME "Best Demo Ever"
 const GLuint WIDTH = 1920;
 const GLuint HEIGHT = 1080;
@@ -38,7 +41,7 @@ void keycallback(GLFWwindow* window, int key, int scancode, int action, int mode
   else if (action == GLFW_RELEASE) keys[key] = false;
 }
 
-void handleKeys(GLFWwindow* window, GLfloat& timeFromStart, bool& ticking){
+void handleKeys(GLFWwindow* window, GLfloat& timeFromStart, bool& ticking, Shader& shader){
   if (keys[GLFW_KEY_ESCAPE]) glfwSetWindowShouldClose(window, GL_TRUE);
   if (keys[GLFW_KEY_SPACE]) {
     ticking = !ticking;
@@ -51,6 +54,11 @@ void handleKeys(GLFWwindow* window, GLfloat& timeFromStart, bool& ticking){
   if (keys[GLFW_KEY_RIGHT] && !ticking){
     timeFromStart += 0.5f;
     keys[GLFW_KEY_RIGHT] = false;
+  }
+  if (keys[GLFW_KEY_ENTER]) {
+    timeFromStart = 0.0f;
+    keys[GLFW_KEY_ENTER] = false;
+    shader = Shader("shaders/basic.vertex", "shaders/basic.frag");
   }
 }
 
@@ -104,8 +112,8 @@ int main(int argc, char** argv){
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)3);
   glEnableVertexAttribArray(0);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*) (3* sizeof(GLfloat)));
   glEnableVertexAttribArray(1);
 
   glGenBuffers(1, &EBO);
@@ -133,7 +141,9 @@ int main(int argc, char** argv){
       fpscount++;
       fpstime += deltaTime;
       if(fpstime > 1.0f) {
-        std::cout << "FPS: " << (GLfloat) fpscount /  fpstime << std::endl;
+        if(FPSlog){
+          std::cout << "FPS: " << (GLfloat) fpscount /  fpstime << std::endl;
+        }
         fpstime = 0.0f;
         fpscount = 0;
       }
@@ -142,10 +152,15 @@ int main(int argc, char** argv){
     // Handle Inputs if we are in interactive mode
     //if (interactive) {
     glfwPollEvents();
-    handleKeys(window, timeFromStart, isTicking);
+    handleKeys(window, timeFromStart, isTicking, shader);
     //}
+
+
+    glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
+
     glm::mat4 model;
-    model = glm::scale(model, glm::vec3(2.25f, 2.25f, 2.25f));
+    model = glm::scale(model, glm::vec3(SCALE, SCALE, SCALE));
     glm::mat4 view;
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), (GLfloat) WIDTH / (GLfloat) HEIGHT, 0.1f, 100.0f);
