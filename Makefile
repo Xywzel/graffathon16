@@ -6,7 +6,7 @@ DEBUG = -g
 CFLAGS = -Wall -std=c++11 -march=native -O3
 
 # Libraries to include
-LIBS = -lGLEW -lglfw3 -lGL -lm -lXrandr -lXi -lX11 -lXxf86vm -lpthread
+LIBS = -lGLEW -lglfw3 -lGL -lX11 -lXi -lXrandr -lXxf86vm -lXinerama -lXcursor -lrt -lm -pthread -ldl
 
 # Extra headers
 INCLUDES = -I headers -I include
@@ -31,6 +31,7 @@ $(TARGET): $(OBJECTS)
 	$(CC) $(CFLAGS) $(INCLUDES) -o $(TARGET) $(OBJECTS) $(LIBS)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+	-mkdir -p $(OBJDIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
